@@ -1,6 +1,15 @@
 CC    = gcc
 CFLAG = -Wall -g
 BUILD = build
+GSTRF = `pkg-config --cflags --libs gstreamer-1.0`
 
 test:
-	$(CC) $(CFLAG) /test/test.c -o $(BUILD)/test
+	$(CC) $(CFLAG) tests/test.c -o $(BUILD)/test
+	$(BUILD)/test
+
+clear:
+	rm -r $(BUILD)
+	mkdir $(BUILD)
+	touch $(BUILD)/.gitkeep
+
+.PHONY: test clear
