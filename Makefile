@@ -4,7 +4,7 @@ BUILD = build
 GSTRF = `pkg-config --cflags --libs gstreamer-1.0`
 
 test:
-	$(CC) $(CFLAG) tests/test.c -o $(BUILD)/test
+	$(CC) $(CFLAG) tests/test.c -o $(BUILD)/test $(GSTRF)
 	$(BUILD)/test
 
 clear:
