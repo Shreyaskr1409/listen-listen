@@ -7,9 +7,9 @@ test:
 	$(CC) $(CFLAG) tests/test.c -o $(BUILD)/test $(GSTRF)
 	$(BUILD)/test
 
-clear:
+clean:
 	rm -r $(BUILD)
 	mkdir $(BUILD)
 	touch $(BUILD)/.gitkeep
 
-.PHONY: test clear
+.PHONY: test clean
