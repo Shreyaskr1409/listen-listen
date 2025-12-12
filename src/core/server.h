@@ -1,10 +1,11 @@
 #pragma once
 
+#include <asm-generic/socket.h>
+#include <netinet/in.h>
 #include <stdio.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <unistd.h>
-#include <asm-generic/socket.h>
+
 #include "controller.h"
 
 #define PORT 4545
