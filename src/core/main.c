@@ -11,8 +11,13 @@
 int main(int argc, char *argv[]) {
     printf("Hello World\n");
 
+    gst_init(&argc, &argv);
+
     PlaybackController ctl;
+    playback_controller_init(&ctl);
+
     run_server(&ctl);
 
+    playback_controller_clear(&ctl);
     return 0;
 }

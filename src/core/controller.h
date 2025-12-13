@@ -6,7 +6,7 @@
 typedef struct __PlaybackController {
     GstElement *playbin;
     char       *current_uri;
-    GstState   *current_state;
+    GstState    current_state;
     char      **upcoming_uri;  // array of strings (playlist)
     gboolean    has_next;
 
@@ -25,3 +25,7 @@ typedef struct __PlaybackController {
     void (*track_finished_cb)(const char *last_track, const char *next_track);
     void (*error_cb)(const char *msg);
 } PlaybackController;
+
+GstElement *create_idle_playbin();
+void        playback_controller_init(PlaybackController *ctl);
+void        playback_controller_clear(PlaybackController *ctl);

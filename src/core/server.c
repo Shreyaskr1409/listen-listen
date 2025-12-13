@@ -1,6 +1,10 @@
 #include "server.h"
 
+#include <stdio.h>
+#include <sys/socket.h>
 #include <unistd.h>
+
+#include "controller.h"
 
 typedef struct __Connection {
     int                sockfd;
@@ -44,5 +48,11 @@ void run_server(PlaybackController *ctl) {
 static void handle_conn(PlaybackController *ctl, Connection *conn) {
     // Should first prepare the gst pipeline, put it in the PAUSED state
     // and then listen to connections
-    // TODO
+
+    if (listen(conn->sockfd, 4)) {
+        perror("error while listening to the socket");
+        return;
+    }
+
+    printf("Server listening on port %d...\n", PORT);
 }
