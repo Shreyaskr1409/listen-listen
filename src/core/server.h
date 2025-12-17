@@ -11,4 +11,6 @@
 #define PORT 4545
 #define BUFFER_SIZE 1024
 
+struct __program_utils;
+
 void run_server(PlaybackController *ctl);

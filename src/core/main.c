@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "controller.h"
+#include "utils.h"
 #include "server.h"
 
 #ifdef __APPLE__
@@ -10,6 +11,8 @@
 
 int main(int argc, char *argv[]) {
     printf("Hello World\n");
+
+    program_utils *utl = program_utils_create();
 
     gst_init(&argc, &argv);
 
