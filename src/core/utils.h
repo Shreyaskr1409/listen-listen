@@ -15,3 +15,4 @@ extern program_utils *utl_global;
 
 void handle_sig(int sig);
 program_utils *program_utils_create();
+void program_utils_clear(program_utils *utl);

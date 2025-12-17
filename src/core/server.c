@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include "controller.h"
+#include "core/utils.h"
 
 typedef struct __Connection {
     int                sockfd;
@@ -38,6 +39,8 @@ void run_server(PlaybackController *ctl) {
         close(conn.sockfd);  // comes from unistd.h
         return;
     }
+
+    utl_global->sockfd = conn.sockfd;
 
     handle_conn(ctl, &conn);
 

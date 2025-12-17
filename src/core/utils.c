@@ -1,5 +1,6 @@
 #include "utils.h"
 #include <signal.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 program_utils *program_utils_create() {
@@ -28,4 +29,8 @@ void handle_sig(int sig) {
     close(utl_global->connfd);
 
     // next step would be to join threads
+}
+
+void program_utils_clear(program_utils *utl) {
+    free(utl);
 }
