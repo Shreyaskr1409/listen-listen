@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 #include "controller.h"
-#include "core/utils.h"
+#include "utils.h"
 
 typedef struct __Connection {
     int                sockfd;
@@ -58,4 +58,8 @@ static void handle_conn(PlaybackController *ctl, Connection *conn) {
     }
 
     printf("Server listening on port %d...\n", PORT);
+
+    while (utl_global->shutdown_req == 0) {
+        // accept loop
+    }
 }

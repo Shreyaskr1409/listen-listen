@@ -1,13 +1,24 @@
 #include <gstreamer-1.0/gst/gst.h>
+#include <pthread.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "controller.h"
-#include "utils.h"
 #include "server.h"
+#include "utils.h"
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
 #endif
+
+void* server_routine(void *arg) {
+    printf("Server routine executing in a separate thread...\n");
+
+    PlaybackController *ctl = arg;
+    run_server(ctl);
+
+    return NULL;
+}
 
 int main(int argc, char *argv[]) {
     printf("Hello World\n");
@@ -20,9 +31,16 @@ int main(int argc, char *argv[]) {
     PlaybackController ctl;
     playback_controller_init(&ctl);
 
-    run_server(&ctl);
+    if (pthread_create(&utl->server_thread, NULL, server_routine, &ctl) != 0) {
+        perror("Failed to create a thread");
+    }
 
-    program_utils_clear(utl);
+    if (pthread_join(utl->server_thread, NULL) != 0) {
+        perror("Failed to join thread");
+    }
+    printf("Thread joined. Clearing all the used data.\n");
+
     playback_controller_clear(&ctl);
+    program_utils_clear(utl);
     return 0;
 }
