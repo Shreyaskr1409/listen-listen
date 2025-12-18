@@ -7,4 +7,4 @@ these sockets, the TUI and GUI will control music playback. Hopefully this turns
 be an amazing project and teaches me a lot of stuff.
 
 ## TODO
-- implement graceful shutdown
+- Create handlers for incoming requests (final part)
