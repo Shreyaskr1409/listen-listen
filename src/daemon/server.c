@@ -1,8 +1,11 @@
 #include "server.h"
 
+#include <pthread.h>
+#include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "controller.h"
@@ -72,11 +75,11 @@ static void handle_conn(PlaybackController *ctl, Connection *server_conn) {
         // OR
         // till the socket is closed
         // (thus in case of shutdown, the server socket needs to be closed)
-        client_conn->sockfd = accept(server_conn->sockfd,
-                (struct sockaddr *)&client_conn->addr, &client_conn->addr_len);
+        client_conn->sockfd = accept(server_conn->sockfd, (struct sockaddr *)&client_conn->addr,
+                                     &client_conn->addr_len);
 
         if (client_conn->sockfd < 0) {
-            perror("Accept failed");
+            if (utl_global->shutdown_req == 0) perror("Accept failed");
             close(client_conn->sockfd);
             free(client_conn);
             continue;
@@ -84,7 +87,24 @@ static void handle_conn(PlaybackController *ctl, Connection *server_conn) {
 
         printf("Request recieved.\n");
 
-        close(client_conn->sockfd);
-        free(client_conn);
+        pthread_t worker_thread;
+        pthread_create(&worker_thread, NULL, handle_client, (void *)&client_conn->sockfd);
+        // remember to make the handle_client have a timeout later
+        pthread_detach(worker_thread);
     }
+}
+
+void *handle_client(void *arg) {
+    Connection *client_conn = (Connection *)arg;
+
+    char *buffer = (char *)malloc(BUFFER_SIZE * sizeof(char));
+
+    ssize_t bytes_received = recv(client_conn->sockfd, buffer, BUFFER_SIZE, 0);
+    printf("%s\n", buffer);
+    send(client_conn->sockfd, buffer, bytes_received, 0);
+
+    close(client_conn->sockfd);
+    free(client_conn);
+
+    return NULL;
 }

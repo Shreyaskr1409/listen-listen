@@ -13,4 +13,5 @@
 
 struct __program_utils;
 
-void run_server(PlaybackController *ctl);
+void  run_server(PlaybackController *ctl);
+void *handle_client(void *arg);

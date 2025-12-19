@@ -11,7 +11,7 @@
 #include <TargetConditionals.h>
 #endif
 
-void* server_routine(void *arg) {
+void *server_routine(void *arg) {
     printf("Server routine executing in a separate thread...\n");
 
     PlaybackController *ctl = arg;

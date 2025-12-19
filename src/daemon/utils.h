@@ -1,8 +1,8 @@
 #pragma once
 
+#include <pthread.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <pthread.h>
 
 typedef struct __program_utils {
     volatile sig_atomic_t shutdown_req;

@@ -30,7 +30,7 @@ program_utils *program_utils_create() {
 }
 
 void handle_sig(int sig) {
-    printf("Shutdown signal received.\n");
+    printf("    => Shutdown signal received.\n");
     utl_global->shutdown_req = 1;
 
     // close() will not work since it only does the internal cleanup
