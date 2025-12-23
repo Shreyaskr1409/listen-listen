@@ -2,7 +2,7 @@ CC    = gcc
 CFLAG = -Wall -g
 BUILD = build
 GSTRF = `pkg-config --cflags --libs gstreamer-1.0`
-FILES = src/core/utils.c src/core/controller.c src/core/server.c src/core/main.c
+FILES = src/daemon/utils.c src/daemon/controller.c src/daemon/server.c src/daemon/main.c
 
 build-server:
 	$(CC) $(CFLAG) $(FILES) -o $(BUILD)/gst-server $(GSTRF)

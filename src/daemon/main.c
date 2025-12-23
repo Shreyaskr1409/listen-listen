@@ -27,6 +27,7 @@ int main(int argc, char *argv[]) {
     program_utils *utl = program_utils_create();
 
     gst_init(&argc, &argv);
+    printf("Using %s as player.\n", gst_version_string());
 
     PlaybackController ctl;
     playback_controller_init(&ctl);

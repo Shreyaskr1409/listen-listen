@@ -1,8 +1,10 @@
 #include "controller.h"
 
+#include "glib-object.h"
 #include "glib.h"
 #include "gst/gstelement.h"
 #include "gst/gstelementfactory.h"
+#include "gst/gstobject.h"
 
 GstElement *create_idle_playbin() {
     GstElement *playbin;  // made a local variable because it will dynamically allocated
@@ -46,4 +48,12 @@ void playback_controller_clear(PlaybackController *ctl) {
 
     g_mutex_clear(&ctl->lock);
     g_cond_clear(&ctl->cond);
+}
+
+void controller_play_track(PlaybackController *ctl, char *uri) {
+    char *alt_uri = "file:///home/shrey/Music/Albums/3D Country/02 3D Country.mp3";
+    uri = alt_uri;
+
+    g_object_set(G_OBJECT(ctl->playbin), "uri", uri, NULL);
+    gst_element_set_state(ctl->playbin, GST_STATE_PLAYING);
 }

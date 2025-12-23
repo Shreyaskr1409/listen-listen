@@ -4,6 +4,7 @@
 #include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -16,6 +17,11 @@ typedef struct __Connection {
     struct sockaddr_in addr;  // comes from netinet/in.h (requires sys/socket.h)
     socklen_t          addr_len;
 } Connection;
+
+typedef struct __HandleClientArgs {
+    Connection *conn;
+    PlaybackController *ctl;
+} HandleClientArgs;
 
 static void handle_conn(PlaybackController *ctl, Connection *server_conn);
 
@@ -66,6 +72,7 @@ static void handle_conn(PlaybackController *ctl, Connection *server_conn) {
     }
 
     printf("Server listening on port %d...\n", PORT);
+    printf("------------\n");
 
     while (utl_global->shutdown_req == 0) {
         Connection *client_conn = malloc(sizeof(*client_conn));
@@ -85,26 +92,47 @@ static void handle_conn(PlaybackController *ctl, Connection *server_conn) {
             continue;
         }
 
-        printf("Request recieved.\n");
+        printf("INFO: Request recieved.\n");
+
+        HandleClientArgs* args = malloc(sizeof(HandleClientArgs));
+        *args = (HandleClientArgs) {
+            client_conn,
+            ctl
+        };
 
         pthread_t worker_thread;
-        pthread_create(&worker_thread, NULL, handle_client, (void *)&client_conn->sockfd);
+        pthread_create(&worker_thread, NULL, handle_client, (void *)args);
         // remember to make the handle_client have a timeout later
         pthread_detach(worker_thread);
     }
 }
 
 void *handle_client(void *arg) {
-    Connection *client_conn = (Connection *)arg;
+    HandleClientArgs *args = (HandleClientArgs *)arg;
 
     char *buffer = (char *)malloc(BUFFER_SIZE * sizeof(char));
 
-    ssize_t bytes_received = recv(client_conn->sockfd, buffer, BUFFER_SIZE, 0);
-    printf("%s\n", buffer);
-    send(client_conn->sockfd, buffer, bytes_received, 0);
+    ssize_t bytes_received = recv(args->conn->sockfd, buffer, BUFFER_SIZE, 0);
+    printf("%s", buffer);
 
-    close(client_conn->sockfd);
-    free(client_conn);
+    char *saveptr = NULL;
+    char *token = strtok_r(buffer, " ", &saveptr);
+
+    printf("%s\n", token);
+
+    if (strcmp(token, "Play") == 0) {
+        printf("SUCCESS\n");
+        controller_play_track(args->ctl, "nothing");
+    } else {
+        printf("FAILURE %s\n", token);
+    }
+
+    send(args->conn->sockfd, buffer, bytes_received, 0);
+
+    printf("%d\n", close(args->conn->sockfd));
+    free(args->conn);
+    free(args);
+    printf("------------\n");
 
     return NULL;
 }

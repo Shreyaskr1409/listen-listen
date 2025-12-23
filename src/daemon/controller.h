@@ -29,3 +29,6 @@ typedef struct __PlaybackController {
 GstElement *create_idle_playbin();
 void        playback_controller_init(PlaybackController *ctl);
 void        playback_controller_clear(PlaybackController *ctl);
+void        controller_play_track(PlaybackController *ctl, char *uri);
+void        controller_pause_track(PlaybackController *ctl);
+void        controller_queue_next_track(PlaybackController *ctl, char *uri);
