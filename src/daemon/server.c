@@ -19,7 +19,7 @@ typedef struct __Connection {
 } Connection;
 
 typedef struct __HandleClientArgs {
-    Connection *conn;
+    Connection         *conn;
     PlaybackController *ctl;
 } HandleClientArgs;
 
@@ -94,11 +94,8 @@ static void handle_conn(PlaybackController *ctl, Connection *server_conn) {
 
         printf("INFO: Request recieved.\n");
 
-        HandleClientArgs* args = malloc(sizeof(HandleClientArgs));
-        *args = (HandleClientArgs) {
-            client_conn,
-            ctl
-        };
+        HandleClientArgs *args = malloc(sizeof(HandleClientArgs));
+        *args = (HandleClientArgs){client_conn, ctl};
 
         pthread_t worker_thread;
         pthread_create(&worker_thread, NULL, handle_client, (void *)args);
@@ -110,26 +107,46 @@ static void handle_conn(PlaybackController *ctl, Connection *server_conn) {
 void *handle_client(void *arg) {
     HandleClientArgs *args = (HandleClientArgs *)arg;
 
-    char *buffer = (char *)malloc(BUFFER_SIZE * sizeof(char));
+    char buffer[BUFFER_SIZE + 1];
+    // memset was needed because when i was printing buffer, i was
+    // getting a lot of garbage value printed after the first \n
+    // like if buffer was RESUME/n once, the next time it printed PLAY/nE/n
+    memset(buffer, 0, sizeof(buffer));
 
     ssize_t bytes_received = recv(args->conn->sockfd, buffer, BUFFER_SIZE, 0);
+    if (bytes_received == 0) {
+        const char *resp;
+        resp = "NO MESSAGE";
+        send(args->conn->sockfd, resp, strlen(resp), 0);
+        goto cleanup;
+    }
     printf("%s", buffer);
 
     char *saveptr = NULL;
-    char *token = strtok_r(buffer, " ", &saveptr);
+    char *token = strtok_r(buffer, " \n\r", &saveptr);
 
-    printf("%s\n", token);
+    printf("TOKEN: %s\n", token);
 
-    if (strcmp(token, "Play") == 0) {
-        printf("SUCCESS\n");
-        controller_play_track(args->ctl, "nothing");
+    if (strcmp(token, "PLAY") == 0) {
+        char *uri = strtok_r(NULL, "\n\r", &saveptr);
+        printf("PLAYING\n");
+        controller_play_track(args->ctl, uri);
+    } else if (strcmp(token, "PAUSE") == 0) {
+        printf("PAUSING\n");
+        controller_pause_track(args->ctl);
+    } else if (strcmp(token, "RESUME") == 0) {
+        printf("RESUMING\n");
+        controller_resume_track(args->ctl);
     } else {
-        printf("FAILURE %s\n", token);
+        printf("INVALID REQUEST %s\n", token);
     }
 
-    send(args->conn->sockfd, buffer, bytes_received, 0);
+    const char *resp;
+    resp = "SUCCESS";
+    send(args->conn->sockfd, resp, strlen(resp), 0);
 
-    printf("%d\n", close(args->conn->sockfd));
+cleanup:
+    printf("client_sock closed (0 or -1): %d\n", close(args->conn->sockfd));
     free(args->conn);
     free(args);
     printf("------------\n");
