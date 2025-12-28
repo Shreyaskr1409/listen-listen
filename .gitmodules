@@ -1,3 +1,6 @@
 [submodule "deps/clay"]
 	path = deps/clay
 	url = https://github.com/nicbarker/clay.git
+[submodule "deps/raylib"]
+	path = deps/raylib
+	url = https://github.com/raysan5/raylib.git

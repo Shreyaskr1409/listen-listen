@@ -17,6 +17,10 @@ test:
 	$(CC) $(CFLAG) tests/test.c -o $(BUILD)/test $(GSTRF)
 	$(BUILD)/test
 
+setup-raylib:
+	cd deps/raylib/src/ && make clean && make PLATFORM=PLATFORM_DESKTOP && \
+		cp libraylib.a ../../lib/libraylib.a && cp raylib.h ../../include/raylib.h
+
 clean:
 	rm -r $(BUILD)
 	mkdir $(BUILD)
