@@ -44,3 +44,7 @@ For now the current plan is to implement the following:
 - Add gapless playback to the daemon.
 - Add scripts to test the files easily.
 - Handle cases where the URI is not a file but is available through something like HTTP.
+
+While dealing with different OS, I prefer to have different Makefile for different platforms instead of having
+a CMake or Meson build system. I do not want a build system to build a build system to build my project, atleast
+not at the scale at which I am at right now.

@@ -8,3 +8,9 @@ CompileFlags:
       "-I/usr/include/libmount",
       "-I/usr/include/blkid",
     ]
+
+Completion:
+  AllScopes: Yes
+  ArgumentLists: FullPlaceholders
+  HeaderInsertion: IWYU
+  CodePatterns: All

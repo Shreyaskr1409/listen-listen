@@ -1,7 +1,6 @@
 #include <gstreamer-1.0/gst/gst.h>
 #include <pthread.h>
 #include <stdio.h>
-#include <unistd.h>
 
 #include "controller.h"
 #include "server.h"
