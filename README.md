@@ -3,7 +3,7 @@ A TUI and GUI music player built with C and Go.
 
 This music player consists of:
 - a daemon in C which runs a server to interact with GStreamer
-- a GUI frontend using [Raylib](https://github.com/raysan5/raylib) (C implementation) as an immediate mode renderer for [Nic Barker's](https://github.com/nicbarker) [Clay](https://github.com/nicbarker/clay) to make the GUI layout.
+- a GUI
 - a TUI (going to be) built with Go using [@charmbracelet's](https://github.com/charmbracelet) [bubbletea](https://github.com/charmbracelet/bubbletea) and [lipgloss](https://github.com/charmbracelet/lipgloss).
 
 ## Installation
@@ -21,9 +21,8 @@ make build-server
 
 3. Build the GUI (requires Clay and Raylib)
 
-Make sure you have the Clay and Raylib available inside your deps/Clay folder. If not the get the submodule in order to build GUI.
 ```bash
-make build-gui
+# make build-gui (yet to be developed)
 ```
 
 4. Build the TUI (development yet to start)
