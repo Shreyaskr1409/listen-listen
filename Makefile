@@ -6,13 +6,16 @@ GSTRF = `pkg-config --cflags --libs gstreamer-1.0`
 FILES_DAEMON = src/daemon/utils.c src/daemon/controller.c src/daemon/server.c src/daemon/main.c
 FILES_GUI = src/gui/main.c
 
+build-gui:
+	cargo build && \
+		cp target/debug/listen-gui $(BUILD)/listen-gui && \
+		$(BUILD)/listen-gui
+
 build-server:
-	$(CC) $(CFLAG) $(FILES_DAEMON) -o $(BUILD)/gst-server $(GSTRF)
-	$(BUILD)/gst-server
+	$(CC) $(CFLAG) $(FILES_DAEMON) -o $(BUILD)/gst-server $(GSTRF) && $(BUILD)/gst-server
 
 test:
-	$(CC) $(CFLAG) tests/test.c -o $(BUILD)/test $(GSTRF)
-	$(BUILD)/test
+	$(CC) $(CFLAG) tests/test.c -o $(BUILD)/test $(GSTRF) && $(BUILD)/test
 
 clean:
 	rm -r $(BUILD)
