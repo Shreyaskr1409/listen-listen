@@ -1,12 +1,18 @@
+mod font;
+
 use iced::{
-    Element, Theme, widget::{button, column, text}
+    Element, Font, Length::Fill, Task, Theme, widget::{button, column, container, row, space::horizontal, text}
 };
+
+use crate::font::setup_fonts;
 
 #[derive(Debug, Default)]
 pub struct AppState {}
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    Minimize,
+    Maximize,
     Exit,
 }
 
@@ -14,16 +20,62 @@ pub fn new_app_state() -> AppState {
     AppState {}
 }
 
-pub fn view(_app_state: &AppState) -> Element<'_, Message> {
+pub fn view(app_state: &AppState) -> Element<'_, Message> {
     column![
-        text("Hello World!").size(20),
-        button(text("Tap here")).on_press(Message::Exit),
-    ].into()
+        app_state.header(),
+        app_state.content(),
+        app_state.footer()
+    ]
+    .spacing(4)
+    .padding(4)
+    .into()
 }
 
-pub fn update(_app_state: &mut AppState, message: Message) {
+impl AppState {
+    fn header(&self) -> Element<'_, Message> {
+        container(
+            row![
+                button("Home").on_press(Message::Minimize),
+                text("Listen-Listen").size(24),
+                horizontal(),
+                button("-").on_press(Message::Minimize),
+                button("(=)").on_press(Message::Maximize),
+                button("X").on_press(Message::Exit),
+            ]
+        )
+            .width(Fill)
+            .padding(4)
+            .style(container::rounded_box)
+            .into()
+    }
+
+    fn content(&self) -> Element<'_, Message> {
+        container(
+            text("Listen-Listen").size(32)
+        )
+            .width(Fill)
+            .height(Fill)
+            .padding(4)
+            .style(container::rounded_box)
+            .into()
+    }
+
+    fn footer(&self) -> Element<'_, Message> {
+        container(
+            text("Listen-Listen").size(32)
+        )
+            .width(Fill)
+            .padding(4)
+            .style(container::rounded_box)
+            .into()
+    }
+}
+
+pub fn update(_app_state: &mut AppState, message: Message) -> Task<Message> {
     match message {
-        Message::Exit => println!("exit trigger")
+        Message::Minimize => println!("minimize trigger").into(),
+        Message::Maximize => println!("maximize trigger").into(),
+        Message::Exit => iced::exit(),
     }
 }
 
@@ -32,7 +84,9 @@ pub fn theme(_app_state: &AppState) -> Theme {
 }
 
 fn main() -> iced::Result {
+    let font_families = setup_fonts();
     iced::application(new_app_state, update, view)
         .theme(theme)
+        .default_font(Font::with_name(font_families.default_font_family))
         .run()
 }
