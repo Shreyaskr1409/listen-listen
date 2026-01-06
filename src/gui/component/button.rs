@@ -5,7 +5,7 @@ use iced::{
 
 use crate::Message;
 
-pub fn custom_buttom(txt: &str, w: f32, h: f32, text_size: f32) -> Element<'static, Message> {
+pub fn custom_button(txt: &str, w: f32, h: f32, text_size: f32) -> Element<'static, Message> {
     widget::button(
         container(text(String::from(txt)).size(text_size))
             .width(Length::Fixed(w))
