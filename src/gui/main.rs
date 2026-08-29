@@ -57,22 +57,23 @@ impl AppState {
 
 pub fn update(app_state: &mut AppState, message: Message) -> Task<Message> {
     match message {
-        Message::Library(msg) => {
-            app_state.library_view.update(msg);
-            ().into()
-        }
+        Message::Library(msg) => app_state.library_view.update(msg).map(Message::Library),
+
         Message::Default => {
             println!("Do nothing");
             ().into()
         }
+
         Message::Minimize => {
             println!("minimize trigger");
             ().into()
         }
+
         Message::Maximize => {
             println!("maximize trigger");
             ().into()
         }
+
         Message::Exit => iced::exit(),
     }
 }

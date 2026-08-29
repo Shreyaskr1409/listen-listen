@@ -2,26 +2,23 @@ use iced::Length::Shrink;
 use iced::widget::pane_grid::Target;
 use iced::widget::rule::{horizontal, vertical};
 use iced::widget::{
-    PaneGrid, button, column, container, grid, pane_grid, responsive, row, rule, scrollable, space, text, text_editor
+    PaneGrid, button, column, container, grid, pane_grid, responsive, row, rule, scrollable, space,
+    text, text_editor,
 };
-use iced::{Alignment, Background, Theme};
+use iced::{Alignment, Background, Task, Theme};
 use iced::{Element, Length::Fill};
 
 use crate::component::button::listing_button;
 use crate::component::style::base_bg_container_style;
-use crate::component::table::ResizableTable;
+use crate::component::widget::table::ResizableTable;
+use crate::query::scan_for_files;
 use crate::{AppState, Message};
 
 #[derive(Debug, Default)]
 pub enum ViewLayout {
     #[default]
     GroupedLayout,
-    TableLayout,
-}
-
-#[derive(Debug, Default)]
-struct FilterSidebar {
-    width: u32,
+    _TableLayout,
 }
 
 #[derive(Debug)]
@@ -51,7 +48,6 @@ struct TextboxState {
 #[derive(Debug)]
 pub struct LibraryView {
     view_layout: ViewLayout,
-    filter_sidebar: FilterSidebar,
     pane_state: pane_grid::State<PaneState>,
     table_state: TableState,
     path_textbox_state: TextboxState,
@@ -63,6 +59,8 @@ pub enum LibraryMessage {
     PaneResized(pane_grid::ResizeEvent),
     PaneDragged(pane_grid::DragEvent),
     ButtonPressed,
+    FileScanInitiate,
+    FileScanEnds(Result<String, String>),
 }
 
 pub fn player_library(app_state: &AppState) -> Element<'_, Message> {
@@ -88,17 +86,61 @@ impl TableState {
                 "Duration".to_string(),
             ],
             data: vec![
-                vec!["1".into(), "Yes! I Am a Long Way From Home".into(), "3:20".into()],
-                vec!["1".into(), "Yes! I Am a Long Way From Home".into(), "3:20".into()],
-                vec!["1".into(), "Yes! I Am a Long Way From Home".into(), "3:20".into()],
-                vec!["1".into(), "Yes! I Am a Long Way From Home".into(), "3:20".into()],
-                vec!["1".into(), "Yes! I Am a Long Way From Home".into(), "3:20".into()],
-                vec!["1".into(), "Yes! I Am a Long Way From Home".into(), "3:20".into()],
-                vec!["1".into(), "Yes! I Am a Long Way From Home".into(), "3:20".into()],
-                vec!["1".into(), "Yes! I Am a Long Way From Home".into(), "3:20".into()],
-                vec!["1".into(), "Yes! I Am a Long Way From Home".into(), "3:20".into()],
-                vec!["1".into(), "Yes! I Am a Long Way From Home".into(), "3:20".into()],
-                vec!["1".into(), "Yes! I Am a Long Way From Home".into(), "3:20".into()],
+                vec![
+                    "1".into(),
+                    "Yes! I Am a Long Way From Home".into(),
+                    "3:20".into(),
+                ],
+                vec![
+                    "1".into(),
+                    "Yes! I Am a Long Way From Home".into(),
+                    "3:20".into(),
+                ],
+                vec![
+                    "1".into(),
+                    "Yes! I Am a Long Way From Home".into(),
+                    "3:20".into(),
+                ],
+                vec![
+                    "1".into(),
+                    "Yes! I Am a Long Way From Home".into(),
+                    "3:20".into(),
+                ],
+                vec![
+                    "1".into(),
+                    "Yes! I Am a Long Way From Home".into(),
+                    "3:20".into(),
+                ],
+                vec![
+                    "1".into(),
+                    "Yes! I Am a Long Way From Home".into(),
+                    "3:20".into(),
+                ],
+                vec![
+                    "1".into(),
+                    "Yes! I Am a Long Way From Home".into(),
+                    "3:20".into(),
+                ],
+                vec![
+                    "1".into(),
+                    "Yes! I Am a Long Way From Home".into(),
+                    "3:20".into(),
+                ],
+                vec![
+                    "1".into(),
+                    "Yes! I Am a Long Way From Home".into(),
+                    "3:20".into(),
+                ],
+                vec![
+                    "1".into(),
+                    "Yes! I Am a Long Way From Home".into(),
+                    "3:20".into(),
+                ],
+                vec![
+                    "1".into(),
+                    "Yes! I Am a Long Way From Home".into(),
+                    "3:20".into(),
+                ],
             ],
         }
     }
@@ -108,7 +150,7 @@ impl Default for LibraryView {
     fn default() -> Self {
         let (mut pane_state, sidebar_pane_id) = pane_grid::State::new(PaneState {
             pane_type: PaneType::Sidebar,
-            title: "Library Filter Sidebar".into(),
+            title: "Filter".into(),
         });
 
         if let Some((_main_pane_id, split)) = pane_state.split(
@@ -116,18 +158,19 @@ impl Default for LibraryView {
             sidebar_pane_id, // TODO: put ids into PaneState
             PaneState {
                 pane_type: PaneType::Main,
-                title: "Library Content".into(),
+                title: "Library".into(),
             },
         ) {
-            pane_state.resize(split, 0.28);
+            pane_state.resize(split, 0.2);
         }
 
         Self {
             view_layout: ViewLayout::GroupedLayout,
-            filter_sidebar: FilterSidebar { width: 300 },
             pane_state: pane_state,
             table_state: TableState::new(),
-            path_textbox_state: TextboxState { text_editor_content: text_editor::Content::new() }
+            path_textbox_state: TextboxState {
+                text_editor_content: text_editor::Content::new(),
+            },
         }
     }
 }
@@ -136,28 +179,51 @@ impl LibraryView {
     pub fn view(&self) -> Element<'_, LibraryMessage> {
         match self.view_layout {
             ViewLayout::GroupedLayout => grouped_layout_view(self),
-            ViewLayout::TableLayout => space().into(),
+            ViewLayout::_TableLayout => space().into(),
         }
     }
 
-    pub fn update(&mut self, message: LibraryMessage) {
+    pub fn update(&mut self, message: LibraryMessage) -> Task<LibraryMessage> {
         match message {
             LibraryMessage::ColumnResized(index, new_width) => {
                 if let Some(w) = self.table_state.column_widths.get_mut(index) {
                     *w = new_width;
                 }
+                ().into()
             }
+
             LibraryMessage::PaneResized(pane_grid::ResizeEvent { split, ratio }) => {
                 self.pane_state.resize(split, ratio);
+                ().into()
             }
+
             LibraryMessage::PaneDragged(pane_grid::DragEvent::Dropped { pane, target }) => {
                 if let Target::Pane(other, _) = target {
                     self.pane_state.swap(pane, other);
                 }
                 // self.pane_state.swap(pane, target);
+                ().into()
             }
-            LibraryMessage::PaneDragged(_) => {}
-            LibraryMessage::ButtonPressed => {}
+
+            LibraryMessage::FileScanInitiate => {
+                Task::perform(scan_for_files(), LibraryMessage::FileScanEnds)
+            }
+
+            LibraryMessage::FileScanEnds(result) => match result {
+                Ok(resp) => {
+                    match resp.as_str() {
+                        "Works" => {
+                            println!("Works");
+                        }
+                        _ => {}
+                    }
+                    ().into()
+                }
+                Err(_) => ().into(),
+            },
+
+            LibraryMessage::PaneDragged(_) => ().into(),
+            LibraryMessage::ButtonPressed => ().into(),
         }
     }
 }
@@ -173,21 +239,15 @@ fn grouped_layout_view(library_view: &LibraryView) -> Element<'_, LibraryMessage
         // let controls: Element<'_, LibraryMessage> = row![button("-"),].spacing(5).into();
 
         pane_grid::Content::new(content).title_bar(
-            pane_grid::TitleBar::new(
-                text(match state.pane_type {
-                    PaneType::Main => "Library",
-                    PaneType::Sidebar => "Filters",
-                })
-                .width(Fill)
-                .align_x(Alignment::Center),
-            )
-            .style(container::bordered_box)
-            .padding(4),
+            pane_grid::TitleBar::new(text(&state.title).width(Fill).align_x(Alignment::Center))
+                .style(container::bordered_box)
+                .padding(4),
         )
     })
     .on_resize(10, LibraryMessage::PaneResized)
     .on_drag(LibraryMessage::PaneDragged)
     .height(Fill)
+    .min_size(250)
     .spacing(4)
     .into()
 }
@@ -251,18 +311,16 @@ fn album_content_left_pane(_library_view: &LibraryView) -> Element<'static, Libr
     .into()
 }
 
-fn album_content_table(library_view: &LibraryView, effective_widths: Vec<f32>) -> Element<'_, LibraryMessage> {
+fn album_content_table(
+    library_view: &LibraryView,
+    effective_widths: Vec<f32>,
+) -> Element<'_, LibraryMessage> {
     let headers: Vec<Element<LibraryMessage>> = library_view
-                .table_state
-                .headers
-                .iter()
-                .map(|h| {
-                    container(text(h).size(20))
-                        .padding(4)
-                        .width(Fill)
-                        .into()
-                })
-                .collect();
+        .table_state
+        .headers
+        .iter()
+        .map(|h| container(text(h).size(20)).padding(4).width(Fill).into())
+        .collect();
 
     let rows: Vec<Vec<Element<LibraryMessage>>> = library_view
         .table_state
@@ -270,23 +328,17 @@ fn album_content_table(library_view: &LibraryView, effective_widths: Vec<f32>) -
         .iter()
         .map(|row| {
             row.iter()
-                .map(|cell| {
-                    container(text(cell).size(16))
-                        .padding(4)
-                        .width(Fill)
-                        .into()
-                })
-            .collect()
+                .map(|cell| container(text(cell).size(16)).padding(4).width(Fill).into())
+                .collect()
         })
-    .collect();
+        .collect();
 
     let table = ResizableTable::new(effective_widths, LibraryMessage::ColumnResized)
         .headers(headers)
         .rows(rows)
         .min_width(60.0);
 
-    container(table)
-        .into()
+    container(table).into()
 }
 
 fn album_content_right_pane(library_view: &LibraryView) -> Element<'_, LibraryMessage> {
@@ -314,10 +366,7 @@ fn album_content_right_pane(library_view: &LibraryView) -> Element<'_, LibraryMe
 
         scrollable(
             container(row![
-                column![
-                    album_content_table(library_view, effective_widths),
-                ]
-                .spacing(4),
+                column![album_content_table(library_view, effective_widths),].spacing(4),
             ])
             .style(base_bg_container_style)
             .padding(4),
@@ -384,17 +433,19 @@ fn filter_sidebar_view(library_view: &LibraryView) -> Element<'_, LibraryMessage
             }
         })
         .height(Fill),
-
         row![
-            text("Search paths").width(Fill).height(Fill).align_y(Alignment::Center),
-            button("Scan for Music").on_press(LibraryMessage::ButtonPressed),
-        ].width(Fill).height(Shrink),
-
+            text("Search paths")
+                .width(Fill)
+                .height(Fill)
+                .align_y(Alignment::Center),
+            button("Scan for Music").on_press(LibraryMessage::FileScanInitiate),
+        ]
+        .width(Fill)
+        .height(Shrink),
         text_editor(&library_view.path_textbox_state.text_editor_content)
             .placeholder("Enter a path in each line")
             .height(100),
-
     ]
-        .spacing(4)
+    .spacing(4)
     .into()
 }
