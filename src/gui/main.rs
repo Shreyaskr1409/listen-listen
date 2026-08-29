@@ -4,9 +4,11 @@ mod query;
 mod view;
 
 use iced::{Element, Font, Task, Theme, widget::column};
+use rusqlite::Connection;
 
 use crate::{
     component::style::setup_fonts,
+    query::{Metadata, get_metadata, init, scan_folders},
     view::{
         library::{LibraryMessage, LibraryView, player_library},
         player_footer::player_footer,
@@ -82,10 +84,37 @@ pub fn theme(_app_state: &AppState) -> Theme {
     Theme::KanagawaDragon
 }
 
-fn main() -> iced::Result {
+fn main() {
+    let conn: Connection = match init("sonux.sqlite.db") {
+        Err(e) => {
+            eprintln!("Failed to initialize database: {e}");
+            return;
+        }
+        Ok(c) => c,
+    };
+
+    let metadata_list: Vec<Metadata> = match get_metadata(conn) {
+        Err(e) => {
+            eprintln!("Error while fetching metadata: {e}");
+            return;
+        }
+        Ok(m) => m,
+    };
+
+    let elem = metadata_list.get(48);
+
+    if let Some(metadata) = elem {
+        println!("Title: {}, Album: {}", metadata.title, metadata.album);
+    } else {
+        println!("No metadata found at index 1.");
+    }
+
     let font_families = setup_fonts();
-    iced::application(new_app_state, update, view)
+    if let Err(e) = iced::application(new_app_state, update, view)
         .theme(theme)
         .default_font(Font::with_name(font_families.default_font_family))
         .run()
+    {
+        eprintln!("Application exited due to error: {e}");
+    }
 }

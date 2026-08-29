@@ -11,7 +11,7 @@ use iced::{Element, Length::Fill};
 use crate::component::button::listing_button;
 use crate::component::style::base_bg_container_style;
 use crate::component::widget::table::ResizableTable;
-use crate::query::scan_for_files;
+use crate::query::scan_folders;
 use crate::{AppState, Message};
 
 #[derive(Debug, Default)]
@@ -206,7 +206,7 @@ impl LibraryView {
             }
 
             LibraryMessage::FileScanInitiate => {
-                Task::perform(scan_for_files(), LibraryMessage::FileScanEnds)
+                Task::perform(scan_folders(), LibraryMessage::FileScanEnds)
             }
 
             LibraryMessage::FileScanEnds(result) => match result {

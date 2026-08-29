@@ -6,6 +6,7 @@ use iced::touch;
 use iced::{Border, Element, Event, Length, Point, Rectangle, Shadow, Size};
 
 /// Event produced by the ResizableTable when a column resize handle is dragged.
+#[allow(dead_code)]
 #[derive(Debug, Clone, Copy)]
 pub enum TableMessage {
     Resized { column_index: usize, new_width: f32 },
@@ -39,18 +40,12 @@ where
         }
     }
 
-    pub fn headers(
-        mut self,
-        headers: Vec<Element<'a, Message, Theme, Renderer>>,
-    ) -> Self {
+    pub fn headers(mut self, headers: Vec<Element<'a, Message, Theme, Renderer>>) -> Self {
         self.headers = headers;
         self
     }
 
-    pub fn rows(
-        mut self,
-        rows: Vec<Vec<Element<'a, Message, Theme, Renderer>>>,
-    ) -> Self {
+    pub fn rows(mut self, rows: Vec<Vec<Element<'a, Message, Theme, Renderer>>>) -> Self {
         self.rows = rows;
         self
     }
@@ -99,7 +94,10 @@ where
                 Size::new(col_width, f32::INFINITY),
             );
 
-            let node = header.as_widget_mut().layout(&mut tree.children[i], renderer, &child_limits);
+            let node =
+                header
+                    .as_widget_mut()
+                    .layout(&mut tree.children[i], renderer, &child_limits);
             max_header_height = max_header_height.max(node.size().height);
             header_nodes.push(node);
         }
@@ -123,7 +121,11 @@ where
                     Size::new(col_width, f32::INFINITY),
                 );
 
-                let mut node = cell.as_widget_mut().layout(&mut tree.children[tree_idx], renderer, &child_limits);
+                let mut node = cell.as_widget_mut().layout(
+                    &mut tree.children[tree_idx],
+                    renderer,
+                    &child_limits,
+                );
                 node = node.move_to(Point::new(x_offset, current_y));
                 row_max_height = row_max_height.max(node.size().height);
 

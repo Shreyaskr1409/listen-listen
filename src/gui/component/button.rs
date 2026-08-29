@@ -1,6 +1,7 @@
 use iced::{
-    Alignment, Element, Length::{self, Fill, Shrink},
-    widget::{self, button, container, text},
+    Alignment, Element,
+    Length::{self, Fill},
+    widget::{self, container, text},
 };
 
 use crate::{Message, component::style::listing_button_style};
@@ -16,24 +17,14 @@ pub fn centered_button(txt: &str, w: f32, h: f32, text_size: f32) -> Element<'st
     .into()
 }
 
-pub fn listing_button<MessageType: Clone + 'static>(txt: &str, message: MessageType) -> Element<'static, MessageType> {
-    widget::button(
-        text(String::from(txt))
-    )
-    .on_press(message)
-    .width(Fill)
-    .padding(4)
-    .style(listing_button_style)
-    .into()
-}
-
-pub fn song_listing_button<MessageType: Clone + 'static>(txt: &str, message: MessageType) -> Element<'static, MessageType> {
-    widget::button(
-        text(String::from(txt)).size(14).wrapping(text::Wrapping::None)
-    )
-    .on_press(message)
-    .width(Shrink)
-    .padding(4)
-    .style(button::text)
-    .into()
+pub fn listing_button<MessageType: Clone + 'static>(
+    txt: &str,
+    message: MessageType,
+) -> Element<'static, MessageType> {
+    widget::button(text(String::from(txt)))
+        .on_press(message)
+        .width(Fill)
+        .padding(4)
+        .style(listing_button_style)
+        .into()
 }

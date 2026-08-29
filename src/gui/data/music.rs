@@ -1,6 +1,4 @@
-use std::{collections::HashMap, path::PathBuf};
-
-use jiff::Zoned;
+use std::{collections::HashMap, path::PathBuf, time::Duration};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct SongId(pub usize);
@@ -14,31 +12,39 @@ pub struct ArtistId(pub usize);
 #[derive(Debug)]
 pub struct Song {
     pub id: SongId,
+
+    // File
+    pub path: PathBuf,
+
+    // Metadata
     pub title: String,
     pub track_no: u16,
     pub disc_no: u16,
-    pub artist: ArtistId,
-    pub album_artist: ArtistId,
     pub year: Option<u16>,
-    pub duration: Zoned,
-    pub path: PathBuf,
+
+    // Relationships
+    pub artist: ArtistId,
+    pub album: AlbumId,
+
+    // Technical information
+    pub duration: Option<Duration>,
 }
 
 #[derive(Debug)]
 pub struct Album {
     pub id: AlbumId,
+
     pub title: String,
     pub album_artist: ArtistId,
     pub year: Option<u16>,
+
     pub songs: Vec<SongId>,
-    pub duration: Zoned,
 }
 
 #[derive(Debug)]
 pub struct Artist {
     pub id: ArtistId,
     pub name: String,
-    pub albums: Vec<AlbumId>,
 }
 
 pub struct Library {
