@@ -3,10 +3,15 @@ name = "sonux"
 version = "0.1.0"
 edition = "2024"
 
+[profile.bench]
+opt-level = 3
+debug = true
+lto = true
+
 [dependencies]
 iced = { version = "0.14.0", features = ["advanced"] }
-jiff = "0.2.35"
 rusqlite = { version = "0.37", features = ["bundled"] }
+uuid = { version = "1.23", features = ["v4", "v7", "fast-rng"] }
 
 [[bin]]
 name = "sonux-gui"

@@ -7,6 +7,7 @@ TUI_SRC = src/tui
 DAEMON_SRC = src/daemon
 COMMON_SRC = src/common
 GUI_TARGET = $(BUILD)/sonux-gui
+BENCH_GUI_TARGET = $(BUILD)/sonux-bench-gui
 TUI_TARGET = $(BUILD)/sonux-tui
 DAEMON_TARGET = $(BUILD)/sonux-daemon
 COMMON_TARGET = $(BUILD)/test-common
@@ -28,6 +29,7 @@ debug: $(GUI_TARGET) $(DAEMON_TARGET) $(COMMON_TARGET)
 
 .PHONY: sonux-gui debug-daemon
 debug-gui: $(GUI_TARGET)
+debug-bench-gui: $(BENCH_GUI_TARGET)
 debug-daemon: $(DAEMON_TARGET)
 
 # ====================================
@@ -38,12 +40,21 @@ debug-daemon: $(DAEMON_TARGET)
 $(GUI_TARGET_RELEASE):
 	@mkdir -p $(@D)
 	cargo build --release
-	cp target/release/sonux-gui $(GUI_TARGET)
+	cp target/release/sonux-gui $(GUI_TARGET_RELEASE)
 
 $(GUI_TARGET):
 	@mkdir -p $(@D)
 	cargo build
 	cp target/debug/sonux-gui $(GUI_TARGET)
+
+$(BENCH_GUI_TARGET):
+	@mkdir -p $(@D)
+	cargo build --profile=bench
+	cp target/bench/sonux-gui $(BENCH_GUI_TARGET)
+
+
+
+
 
 $(OBJ_DIR)/%.o: %.c
 	@mkdir -p $(@D)

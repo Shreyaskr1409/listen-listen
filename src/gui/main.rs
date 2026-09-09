@@ -7,13 +7,11 @@ use iced::{Element, Font, Task, Theme, widget::column};
 use rusqlite::Connection;
 
 use crate::{
-    component::style::setup_fonts,
-    query::{Metadata, get_metadata, init, scan_folders},
-    view::{
+    component::style::setup_fonts, data::music::{Metadata, populate_fields}, query::{get_metadata, init}, view::{
         library::{LibraryMessage, LibraryView, player_library},
         player_footer::player_footer,
         player_header::player_header,
-    },
+    }
 };
 
 #[derive(Debug, Default)]
@@ -101,13 +99,7 @@ fn main() {
         Ok(m) => m,
     };
 
-    let elem = metadata_list.get(48);
-
-    if let Some(metadata) = elem {
-        println!("Title: {}, Album: {}", metadata.title, metadata.album);
-    } else {
-        println!("No metadata found at index 1.");
-    }
+    populate_fields(&metadata_list);
 
     let font_families = setup_fonts();
     if let Err(e) = iced::application(new_app_state, update, view)

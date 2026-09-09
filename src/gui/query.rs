@@ -1,19 +1,9 @@
 use rusqlite::Connection;
 
+use crate::data::music::Metadata;
+
 pub fn init(db_path: &str) -> Result<Connection, rusqlite::Error> {
     Connection::open(db_path)
-}
-
-#[derive(Debug)]
-pub struct Metadata {
-    pub path: String,
-    pub title: String,
-    pub track_no: u32,
-    pub disc_no: u32,
-    pub artist: String,
-    pub album: String,
-    pub album_artist: String,
-    pub release_date: String,
 }
 
 pub fn get_metadata(conn: Connection) -> Result<Vec<Metadata>, String> {
