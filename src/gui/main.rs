@@ -3,35 +3,75 @@ mod data;
 mod query;
 mod view;
 
+
 use iced::{Element, Font, Task, Theme, widget::column};
 use rusqlite::Connection;
 
 use crate::{
-    component::style::setup_fonts, data::music::{Metadata, populate_fields}, query::{get_metadata, init}, view::{
+    component::style::setup_fonts,
+    data::music::{Library, Metadata, populate_fields},
+    query::{get_metadata, init},
+    view::{
         library::{LibraryMessage, LibraryView, player_library},
         player_footer::player_footer,
         player_header::player_header,
-    }
+    },
 };
 
-#[derive(Debug, Default)]
-pub struct AppState {
-    library_view: LibraryView,
+#[derive(Debug, Clone)]
+pub enum ErrMessage {
+    ErrDbInitFailed,
+    ErrMetadataFetchingFailed,
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
     Library(LibraryMessage),
+    Error(ErrMessage),
     Default,
     Minimize,
     Maximize,
     Exit,
 }
 
-pub fn new_app_state() -> AppState {
-    AppState {
+#[derive(Debug, Default)]
+pub struct AppState {
+    library_view: LibraryView,
+    library: Library,
+}
+
+pub fn new_app_state() -> (AppState, Task<Message>) {
+    let lib = Library::new();
+    let mut state = AppState {
         library_view: LibraryView::default(),
-    }
+        library: lib,
+    };
+
+    let conn: Connection = match init("sonux.sqlite.db") {
+        Err(e) => {
+            eprintln!("Failed to initialize database: {e}");
+            return (
+                state,
+                Task::done(Message::Error(ErrMessage::ErrDbInitFailed)),
+            );
+        }
+        Ok(c) => c,
+    };
+
+    let metadata_list: Vec<Metadata> = match get_metadata(conn) {
+        Err(e) => {
+            eprintln!("Error while fetching metadata: {e}");
+            return (
+                state,
+                Task::done(Message::Error(ErrMessage::ErrMetadataFetchingFailed)),
+            );
+        }
+        Ok(m) => m,
+    };
+
+    populate_fields(&mut state.library, &metadata_list);
+
+    (state, Task::none())
 }
 
 pub fn view(app_state: &AppState) -> Element<'_, Message> {
@@ -74,6 +114,19 @@ pub fn update(app_state: &mut AppState, message: Message) -> Task<Message> {
             ().into()
         }
 
+        Message::Error(e) => {
+            match e {
+                ErrMessage::ErrDbInitFailed => {
+                    println!("Handler ran for ErrDbInitFailed");
+                    ().into()
+                },
+                ErrMessage::ErrMetadataFetchingFailed => {
+                    println!("Handler ran for ErrMetadataFetchingFailed");
+                    ().into()
+                },
+            }
+        }
+
         Message::Exit => iced::exit(),
     }
 }
@@ -83,24 +136,6 @@ pub fn theme(_app_state: &AppState) -> Theme {
 }
 
 fn main() {
-    let conn: Connection = match init("sonux.sqlite.db") {
-        Err(e) => {
-            eprintln!("Failed to initialize database: {e}");
-            return;
-        }
-        Ok(c) => c,
-    };
-
-    let metadata_list: Vec<Metadata> = match get_metadata(conn) {
-        Err(e) => {
-            eprintln!("Error while fetching metadata: {e}");
-            return;
-        }
-        Ok(m) => m,
-    };
-
-    populate_fields(&metadata_list);
-
     let font_families = setup_fonts();
     if let Err(e) = iced::application(new_app_state, update, view)
         .theme(theme)

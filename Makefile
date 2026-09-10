@@ -50,7 +50,7 @@ $(GUI_TARGET):
 $(BENCH_GUI_TARGET):
 	@mkdir -p $(@D)
 	cargo build --profile=bench
-	cp target/bench/sonux-gui $(BENCH_GUI_TARGET)
+	cp target/release/sonux-gui $(BENCH_GUI_TARGET)
 
 
 

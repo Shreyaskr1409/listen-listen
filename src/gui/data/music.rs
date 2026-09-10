@@ -11,7 +11,7 @@ pub struct Metadata {
     pub artist: String,
     pub album: String,
     pub album_artist: String,
-    pub release_date: String,
+    pub _release_date: String,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -29,7 +29,7 @@ pub struct ArtistNameAsId(pub String);
 #[derive(Debug)]
 pub struct Song {
     // File
-    pub path: PathBuf,
+    pub _path: PathBuf,
 
     // Metadata
     pub title: String,
@@ -37,17 +37,17 @@ pub struct Song {
     pub disc_no: u16,
 
     // Relationships
-    pub artist: ArtistNameAsId,
-    pub album: AlbumId,
+    pub _artist: ArtistNameAsId,
+    pub _album: AlbumId,
 
     // Technical information
-    pub duration: Option<Duration>,
+    pub _duration: Option<Duration>,
 }
 
 #[derive(Debug)]
 pub struct Album {
     pub title: String,
-    pub album_artist: ArtistNameAsId,
+    pub _album_artist: ArtistNameAsId,
     pub year: Option<u16>,
 
     pub songs: Vec<SongId>,
@@ -57,7 +57,7 @@ impl Album {
     pub fn new(title: String, album_artist: String, year: Option<u16>) -> Album {
         Album {
             title,
-            album_artist: ArtistNameAsId(album_artist),
+            _album_artist: ArtistNameAsId(album_artist),
             year,
             songs: Vec::new(),
         }
@@ -70,30 +70,35 @@ impl Album {
 
 #[derive(Debug)]
 pub struct Artist {
-    pub id: ArtistNameAsId,
+    pub _id: ArtistNameAsId,
 }
 
 impl Artist {
     pub fn new(name: String) -> Artist {
         Artist {
-            id: ArtistNameAsId(name),
+            _id: ArtistNameAsId(name),
         }
     }
 }
 
+#[derive(Debug, Default)]
 pub struct Library {
     pub songs: HashMap<SongId, Song>,
     pub albums: HashMap<AlbumId, Album>,
     pub artists: HashMap<ArtistNameAsId, Artist>,
 }
 
-pub fn populate_fields(metadata_list: &Vec<Metadata>) -> Library {
-    let mut lib: Library = Library {
-        songs: HashMap::new(),
-        albums: HashMap::new(),
-        artists: HashMap::new(),
-    };
+impl Library {
+    pub fn new() -> Self {
+        Library {
+            songs: HashMap::new(),
+            albums: HashMap::new(),
+            artists: HashMap::new(),
+        }
+    }
+}
 
+pub fn populate_fields(lib: &mut Library, metadata_list: &Vec<Metadata>) {
     for elem in metadata_list {
         let song_id = SongId(Uuid::now_v7());
         let artist_id = ArtistNameAsId(elem.album_artist.clone());
@@ -114,13 +119,13 @@ pub fn populate_fields(metadata_list: &Vec<Metadata>) -> Library {
             .or_insert_with(|| Album::new(elem.album.clone(), artist_id.0.clone(), year));
 
         let song = Song {
-            path: PathBuf::from(&elem.path),
+            _path: PathBuf::from(&elem.path),
             title: elem.title.clone(),
             track_no: elem.track_no as u16,
             disc_no: elem.disc_no as u16,
-            artist: ArtistNameAsId(elem.artist.clone()),
-            album: album_id,
-            duration: None,
+            _artist: ArtistNameAsId(elem.artist.clone()),
+            _album: album_id,
+            _duration: None,
         };
 
         lib.songs.insert(song_id, song);
@@ -141,11 +146,6 @@ pub fn populate_fields(metadata_list: &Vec<Metadata>) -> Library {
         if i == 10 {
             break;
         }
-        println!(
-            "Album: {}, Year: {:?}",
-            album.title, album.year
-        );
+        println!("Album: {}, Year: {:?}", album.title, album.year);
     }
-
-    lib
 }

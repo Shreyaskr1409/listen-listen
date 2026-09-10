@@ -32,7 +32,7 @@ pub fn get_metadata(conn: Connection) -> Result<Vec<Metadata>, String> {
             artist: row.get(4)?,
             album: row.get(5)?,
             album_artist: row.get(6)?,
-            release_date: row.get(7)?,
+            _release_date: row.get(7)?,
         })
     }) {
         Ok(iter) => iter,
